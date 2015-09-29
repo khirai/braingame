@@ -54,9 +54,20 @@ instr emulate
 		chnset klb3, "lb3"
 	endif
 endin
-schedule "hirai", 0, -1
-instr hirai; scale generators
-kcnt init 0  
+schedule "hirai_init", 0 ,1
+schedule "hirai_evgen", 0, -1
+instr hirai_init
+
+endin
+
+instr hirai_evgen; scale generators
+  ;;table initializations
+  katn1old  init 0.5
+  katn2old  init 0.5
+  katn3old  init 0.5
+  gihirai_tempo ftgen 0,0,33,23,1 2 3 4 6 8 9 12 16 18 24 27 32 36 48 54 64 72 81 96 108 128 144 162 192 216 243 256 288 324 384 432 486
+
+;; 1second sensors  [0,1]
   katn1 chnget "attention1"
   katn2 chnget "attention2"
   katn3 chnget "attention3"
@@ -66,9 +77,21 @@ kcnt init 0
   klb1  chnget "lb1"
   klb2  chnget "lb2"
   klb3  chnget "lb3"
+  katndt1 = katn1-katn1old
+  katndt2 = katn2-katn1old
+  katndt3 = katn3-katn1old
   
 printf "%f %f %f, %f %f %f, %f %f %f\n",kcnt,katn1,katn2,katn3,khb1,khb2,khb3,klb1,klb2,klb3
-kcnt= kcnt +1 
+;; 512/sec sensors [-1000:1000]
+  kraw1 chget "kraw1"
+  kraw2 chget "kraw2"
+  kraw3 chget "kraw3"	
+  
+
+endin
+
+instr hirai_ev; tones
+
 endin
 
 ; demo instrument:
