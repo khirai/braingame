@@ -99,8 +99,8 @@ instr hirai_evgen; scale generators
 
 
   ;; triggering
-if (kcount % ktempo  == 0) then
-  event "i", "hirai_event", 0, 1, i(kpch), i(khb1), i(khb2) 
+if (kcount % (ktempo*10)  == 0) then
+  event "i", "hirai_event", 0, 1, kpch, khb1, khb2 
 endif 
   
 	    printf    "ktempo %f, kpchset %f, kpch %f\n", katn1, ktempo, kpchset, kpch
@@ -115,9 +115,11 @@ endif
 
 endin
 
-instr hirai_event ; tones
-  printf "event %f, %f, %f, %f ,%f, %f\n",1,  p1 ,p2 ,p3 ,p4 ,p5, p6
-endin
+    instr hirai_event ; tones
+            asig oscil 0.3, cpsmidinn(p4)    
+            printf    "event %f, %f, %f\n",1 ,p4 ,p5, p6
+            outs      asig*p5,asig*p6
+    endin
 
 ; demo instrument:
 gkLevelTarmo init 1 ; re-evaluate thes constants to change sound! 
