@@ -53,12 +53,11 @@ instr emulate
 		chnset khb3, "hb3"
 		chnset klb3, "lb3"
 	endif
-endin
-schedule "hirai_init", 0 ,1
-schedule "hirai_evgen", 0, -1
-instr hirai_init
+    endin
 
-endin
+;;; KELLY HIRAI  --------------------
+
+schedule "hirai_evgen", 0, -1
 
 instr hirai_evgen; scale generators
 
@@ -90,22 +89,27 @@ instr hirai_evgen; scale generators
   katndt3 = katn3-katn1old
 
   ;; tempo handling
-  ktempo  tab  katn1*32, itempo
-
+  ktempo  tab  katn3*16, itempo
+ktempo=ktempo*8
   ;; pitch selection
+  katn1pt   port      katn1, 0.2
+  katn2pt   port      katn2, 0.01
 
-  kpchset tab  katn2*14, ipcsetidx
-  kpch    tab  katn3*64+katn2, ipcsets 
+
+  kpchset   tab       katn2pt*13, ipcsetidx
+  kpch      tab       kpchset+katn1pt*63, ipcsets
+
 
 
   ;; triggering
 if (kcount % (ktempo*10)  == 0) then
-  event "i", "hirai_event", 0, 1, kpch, khb1, khb2 
-endif 
-  
-	    printf    "ktempo %f, kpchset %f, kpch %f\n", katn1, ktempo, kpchset, kpch
+  event "i", "hirai_event", 0, 1, kpch, khb1/(kpch+10)*2+0.2, khb2/(kpch+10)*2+0.2 
+            printf    "ktempo %f, kpchset %f, kpch %f\n", katn1pt, ktempo, kpchset, kpch
+endif
 
-;printf "%f %f %f, %f %f %f, %f %f %f\n",katn1,katn1,katn2,katn3,khb1,khb2,khb3,klb1,klb2,klb3
+
+
+;printf "%f %f %f, %f %f %f, %f %f %f\n",katnpt1,katnpt1,katnpt2,katn3,khb1,khb2,khb3,klb1,klb2,klb3
 ;; 512/sec sensors [-1000:1000]
   kraw1 chnget "kraw1"
   kraw2 chnget "kraw2"
@@ -116,7 +120,9 @@ endif
 endin
 
     instr hirai_event ; tones
-            asig oscil 0.3, cpsmidinn(p4)    
+  assig      oscil     0.3, cpsmidinn(p4)
+  aenv      line      1,p3,0
+  asig      =  assig*aenv
             printf    "event %f, %f, %f\n",1 ,p4 ,p5, p6
             outs      asig*p5,asig*p6
     endin
