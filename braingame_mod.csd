@@ -57,17 +57,13 @@ instr emulate
 
 ;;; KELLY HIRAI  --------------------
 
-schedule "hirai_evgen", 0, -1
+  schedule  "hirai_evgen", 0, -1
+  gkhirai_master      init  1
 
-instr hirai_evgen; scale generators
+    instr hirai_evgen; scale generators
 
 ;; kcounter initialization
   kcount    init      0
-
-;; delta initializations
-  katn1old  init      0.5
-  katn2old  init      0.5
-  katn3old  init      0.5
 
 ;;tempo and scale table initializations
   itempo       ftgen   0,0,33,   -02, 1,2,3,4,6,8,9,12,16,18,24,27,32,36,48,54,64,72,81,96,108,128,144,162,192,216,243,256,288,324,384,432,486
@@ -81,49 +77,29 @@ instr hirai_evgen; scale generators
   khb1	chnget "hb1"
   khb2	chnget "hb2"
   khb3	chnget "hb3"
-  klb1  chnget "lb1"
-  klb2  chnget "lb2"
-  klb3  chnget "lb3"
-  katndt1 = katn1-katn1old
-  katndt2 = katn2-katn1old
-  katndt3 = katn3-katn1old
 
   ;; tempo handling
-  ktempo  tab  katn3*16, itempo
-ktempo=ktempo*8
+  katn3pt   port      katn3, 1
+  ktempo    tab       katn3pt*16, itempo
+  
   ;; pitch selection
-  katn1pt   port      katn1, 0.2
-  katn2pt   port      katn2, 0.01
-
-
+  katn1pt   port      katn1, 1
+  katn2pt   port      katn2, 1
   kpchset   tab       katn2pt*13, ipcsetidx
-  kpch      tab       kpchset+katn1pt*63, ipcsets
-
-
+  kpch      tab       kpchset+katn1pt*32+8, ipcsets
 
   ;; triggering
-if (kcount % (ktempo*10)  == 0) then
-  event "i", "hirai_event", 0, 1, kpch, khb1/(kpch+10)*2+0.2, khb2/(kpch+10)*2+0.2 
-            printf    "ktempo %f, kpchset %f, kpch %f\n", katn1pt, ktempo, kpchset, kpch
-endif
+if (kcount % (ktempo*24)  == 0) then
+            event     "i", "hirai_event", 0, 1, kpch,( khb1/(kpch+10)*2+0.1)*gkhirai_master,( khb2/(kpch+10)*2+0.1)*gkhirai_master     
+endif  
 
-
-
-;printf "%f %f %f, %f %f %f, %f %f %f\n",katnpt1,katnpt1,katnpt2,katn3,khb1,khb2,khb3,klb1,klb2,klb3
-;; 512/sec sensors [-1000:1000]
-  kraw1 chnget "kraw1"
-  kraw2 chnget "kraw2"
-  kraw3 chnget "kraw3"	
-  
   kcount    =  kcount + 1
-
-endin
+    endin
 
     instr hirai_event ; tones
-  assig      oscil     0.3, cpsmidinn(p4)
+  assig     oscil     0.3, cpsmidinn(p4)
   aenv      line      1,p3,0
   asig      =  assig*aenv
-            printf    "event %f, %f, %f\n",1 ,p4 ,p5, p6
             outs      asig*p5,asig*p6
     endin
 
